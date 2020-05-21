@@ -1,4 +1,4 @@
-package clear
+package jsonappender
 
 import (
 	"bytes"
