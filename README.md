@@ -7,9 +7,18 @@ Golang util package for appending json data to exinsting json files, **without b
 ### Usage
 
 ```
+package main
+
+import (
+  "encoding/json"
+  "log"
+
+  jap "github.com/ferkze/jsonappender"
+)
+
 func main() {
   f := "foo.json"
-  a, err := JSONArrayAppender(f)
+  a, err := jap.JSONAppender(f)
   if err != nil {
     log.Fatalf("err")
   }
