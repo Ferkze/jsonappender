@@ -2,15 +2,12 @@ package clear
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
 	"os"
 	"regexp"
 	"unicode"
-
-	"github.com/ferkze/personal-finance-crawlers/clear/types"
 )
 
 const (
@@ -32,23 +29,23 @@ type jsonAppender struct {
 func (a jsonAppender) Write(b []byte) (int, error) {
 	trimmed := 0
 	if !a.strippedBracket {
-					t := bytes.TrimLeftFunc(b, unicode.IsSpace)
-					if len(t) == 0 {
-									return len(b), nil
-					}
-					if t[0] != '[' {
-									return 0, errors.New("not appending array: " + string(t))
-					}
-					trimmed = len(b) - len(t) + 1
-					b = t[1:]
-					a.strippedBracket = true
+		t := bytes.TrimLeftFunc(b, unicode.IsSpace)
+		if len(t) == 0 {
+			return len(b), nil
+		}
+		if t[0] != '[' {
+			return 0, errors.New("not appending array: " + string(t))
+		}
+		trimmed = len(b) - len(t) + 1
+		b = t[1:]
+		a.strippedBracket = true
 	}
 	if a.needsComma {
-					a.needsComma = false
-					n, err := a.f.Write([]byte(", "))
-					if err != nil {
-									return n, err
-					}
+		a.needsComma = false
+		n, err := a.f.Write([]byte(", "))
+		if err != nil {
+			return n, err
+		}
 	}
 	n, err := a.f.Write(b)
 	return trimmed + n, err
@@ -56,17 +53,22 @@ func (a jsonAppender) Write(b []byte) (int, error) {
 
 func (a jsonAppender) Close() error {
 	if _, err := a.f.Write(a.tail); err != nil {
-					defer a.f.Close()
-					return err
+		defer a.f.Close()
+		return err
 	}
 	return a.f.Close()
 }
 
-// JSONArrayAppender Helper function to append json
-func JSONArrayAppender(file string) (io.WriteCloser, error) {
+// JSONAppender Helper function to append json array
+func JSONAppender(file string) (io.WriteCloser, error) {
+	err := checkFile(file)
+	if err != nil {
+		return nil, err
+	}
+	
 	f, err := os.OpenFile(file, os.O_RDWR, 0664)
 	if err != nil {
-					return nil, err
+		return nil, err
 	}
 
 	pos, err := f.Seek(0, io.SeekEnd)
@@ -113,26 +115,6 @@ func JSONArrayAppender(file string) (io.WriteCloser, error) {
 	}
 
 	return jsonAppender{f: f, needsComma: hasElements, tail: tail}, nil
-}
-
-// WriteRecords escreve os registros no arquivo records.json
-func WriteRecords(exs[]types.Execution) (err error) {
-	f := "records.json"
-	_ = checkFile(f)
-	
-	a, err := JSONArrayAppender(f)
-	if err != nil {
-		return err
-	}
-
-	if err = json.NewEncoder(a).Encode(&exs); err != nil {
-		return err
-	}
-
-	if err = a.Close(); err != nil {
-		return err
-	}
-	return
 }
 
 func checkFile(filename string) error {
