@@ -1,8 +1,23 @@
 # JSON Appender
 
-## Description
+Golang util package for appending json objects to exinsting arrays in json files, **without bloating your machine's memory**.
 
-Golang util package for appending json data to exinsting json files, **without bloating your machine's memory**.
+It writes data into array json, without buffering the whole file. 
+
+https://pkg.go.dev/github.com/ferkze/jsonappender
+
+### Disclaimer
+
+Note that it still only works when appending data into a root array type. 
+Appending your objects to any other root data type would result in something unexpected or maybe an error.
+
+### Download
+
+```
+go get -u github.com/ferkze/jsonappender
+```
+
+## Examples
 
 ### Usage
 
